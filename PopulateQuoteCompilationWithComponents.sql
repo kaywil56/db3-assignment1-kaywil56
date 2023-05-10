@@ -34,6 +34,29 @@ begin
 end
 go
 
+--Create a procedure addSubComponent that accepts assemblyName, subComponentName
+--and quantity and inserts into the AssemblySubComponent (you will need a self join on
+--Component)
+
+
+create proc addSubcomponent(@assemblyName nvarchar(100), @subComponentName nvarchar(100), @quantity int)
+as
+	
+go
+
+--Create a procedure: createAssembly that accepts two parameters @componentName and
+--componentDescription and inserts into the Component table.
+--Use 0 for ListPrice, TradePrice, TimeToFit.
+--Populate SupplierID and CategoryID by calling the functions getAssemblySupplier and
+--getCategoryID- pass it ‘Assembly’
+
+create proc createAssembly(@componentName nvarchar(100), @componentDescription nvarchar(100))
+as
+	insert Component (ComponentID, ComponentName, ComponentDescription, SupplierID, ListPrice, TradePrice, TimeToFit, CategoryID)
+	values (30924, @componentName, @componentDescription, dbo.getAssemblySupplierID(), 0, 0, 0, dbo.getCategoryID('Assembly'))
+go
+
+
 --create categories
 insert Category (CategoryName) values ('Black Steel')
 insert Category (CategoryName) values ('Assembly')
@@ -107,9 +130,6 @@ values (30922, 'DESLAB', 'Designer labour', @BITManf, 54.00, 54.00, 0, dbo.getCa
 insert Component (ComponentID, ComponentName, ComponentDescription, SupplierID, ListPrice, TradePrice, TimeToFit, CategoryID)
 values (30923, 'APPLAB', 'Apprentice labour', @BITManf, 23.50, 23.50, 0, dbo.getCategoryID('Labour'))
 
-
-/*
---create assemblies
 exec createAssembly  'SmallCorner.15', '15mm small corner'
 exec dbo.addSubComponent 'SmallCorner.15', 'BMS.5.15', 0.120
 exec dbo.addSubComponent 'SmallCorner.15', 'APPLAB', 0.33333
@@ -127,13 +147,7 @@ exec dbo.createAssembly 'CornerBrace.15', '15mm corner brace'
 exec dbo.addSubComponent 'CornerBrace.15', 'BMS.5.15', 0.090
 exec dbo.addSubComponent 'CornerBrace.15', 'BMS10', 2
 
-
-
---drop functions, views and sp
 drop proc createAssembly
 drop proc addSubComponent
 drop function dbo.getCategoryID
 drop function dbo.getAssemblySupplierID
-
-
-   END  */
