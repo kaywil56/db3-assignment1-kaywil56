@@ -8,12 +8,12 @@ DROP TABLE IF EXISTS Contact;
 DROP TABLE IF EXISTS Category;
 
 create table Category(
-	CategoryID int primary key not null,
+	CategoryID int identity(1,1) primary key not null,
 	CategoryName nvarchar(100) not null
 )
 
 create table Contact(
-	ContactID int primary key not null,
+	ContactID int identity(1,1) primary key not null,
 	ContactName nvarchar(100) not null,
 	ContactPhone bigint not null,
 	ContactFax bigint,
@@ -25,7 +25,7 @@ create table Contact(
 
 create table Supplier(
 	SupplierID int primary key not null,
-	SupplierGST decimal not null,
+	SupplierGST decimal(18, 4) not null,
 	constraint FK_Supplier_Contact foreign key (SupplierID) references Contact(ContactID),
 )
 
@@ -34,9 +34,10 @@ create table Component(
 	ComponentName nvarchar(100) not null,
 	ComponentDescription nvarchar(100) not null,
 	TradePrice int not null,
-	TimeToFit decimal not null, 
+	TimeToFit decimal(18, 4) not null, 
 	CategoryID int not null,
 	SupplierID int not null,
+	ListPrice decimal(18, 4) not null, 
 	constraint FK_Component_Category foreign key (CategoryID) references Category(CategoryID),
 	constraint FK_Component_Supplier foreign key (SupplierID) references Supplier(SupplierID),
 
@@ -62,7 +63,7 @@ create table Quote(
 	QuoteID int primary key not null,
 	QuoteDescription nvarchar(100) not null,
 	QuoteDate date not null,
-	QuotePrice decimal not null,
+	QuotePrice decimal(18, 4) not null,
 	QuoteCompiler nvarchar(100) not null,
 	CustomerID int not null,
 	constraint FK_Quote_Customer foreign key (CustomerID) references Customer(CustomerID),
@@ -72,9 +73,9 @@ create table Quote(
 
 create table QuoteComponent(
 	Quantity int not null,
-	TradePrice decimal not null,
-	ListPrice decimal not null,
-	TimeToFit decimal not null,
+	TradePrice decimal(18, 4) not null,
+	ListPrice decimal(18, 4) not null,
+	TimeToFit decimal(18, 4) not null,
 	ComponentID int not null,
 	QuoteID int not null,
 	primary key (ComponentID, QuoteID),
