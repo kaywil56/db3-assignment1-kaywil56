@@ -17,6 +17,23 @@ you must have implemented the database as specified on the assignment ERD
 --create proc addSubComponent
 -- Using variables : @ABC int, @XYZ int, @CDBD int, @BITManf int- capture the ContactID
 
+
+create function getCategoryID(@categoryName nvarchar(100))
+returns int
+as
+begin
+	return(select CategoryID from Category where CategoryName = @categoryName)
+end
+go
+
+create function getAssemblySupplierID()
+returns int
+as
+begin
+	return(select ContactID from Contact where ContactName = 'BIT Manufacturing Ltd.')
+end
+go
+
 --create categories
 insert Category (CategoryName) values ('Black Steel')
 insert Category (CategoryName) values ('Assembly')
@@ -29,21 +46,30 @@ insert Category (CategoryName) values ('Labour')
 --Using variables : @ABC int, @XYZ int, @CDBD int, @BITManf int- capture the ContactID
 -- This will mean you don't have to hard code these later.
 
+declare @ABC int
+declare @XYZ int
+declare @CDBD int
+declare @BITManf int
+
 insert Contact (ContactName, ContactPostalAddress, ContactWWW, ContactEmail, ContactPhone, ContactFax)
 values ('ABC Ltd.', '17 George Street, Dunedin', 'www.abc.co.nz', 'info@abc.co.nz', '	471 2345', null)
 
+set @ABC = @@IDENTITY
 
 insert Contact (ContactName, ContactPostalAddress, ContactWWW, ContactEmail, ContactPhone, ContactFax)
 values ('XYZ Ltd.', '23 Princes Street, Dunedin', null, 'xyz@paradise.net.nz', '4798765', '4798760')
 
+set @XYZ = @@IDENTITY
 
 insert Contact (ContactName, ContactPostalAddress, ContactWWW, ContactEmail, ContactPhone, ContactFax)
 values ('CDBD Pty Ltd.',	'Lot 27, Kangaroo Estate, Bondi, NSW, Australia 2026', '	www.cdbd.com.au', 'support@cdbd.com.au', '+61 (2) 9130 1234', null)
 
+set @CDBD = @@IDENTITY
 
 insert Contact (ContactName, ContactPostalAddress, ContactWWW, ContactEmail, ContactPhone, ContactFax)
 values ('BIT Manufacturing Ltd.', 'Forth Street, Dunedin', 'bitmanf.tekotago.ac.nz', 'bitmanf@tekotago.ac.nz', '0800 SMARTMOVE', null)
 
+set @BITManf = @@IDENTITY
 
 -- create components
 -- Note this script relies on you having captured the ContactID to insert into SupplierID
