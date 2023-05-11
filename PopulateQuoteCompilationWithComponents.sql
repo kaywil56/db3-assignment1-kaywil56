@@ -17,6 +17,7 @@ you must have implemented the database as specified on the assignment ERD
 --create proc addSubComponent
 -- Using variables : @ABC int, @XYZ int, @CDBD int, @BITManf int- capture the ContactID
 
+declare @compID int
 
 create function getCategoryID(@categoryName nvarchar(100))
 returns int
@@ -44,17 +45,18 @@ as
 	
 go
 
+create proc createAssembly(@componentName nvarchar(100), @componentDescription nvarchar(100))
+as
+	set @compID = @compID + 1
+	insert Component (ComponentID, ComponentName, ComponentDescription, SupplierID, ListPrice, TradePrice, TimeToFit, CategoryID)
+	values (@compID, @componentName, @componentDescription, dbo.getAssemblySupplierID(), 0, 0, 0, dbo.getCategoryID('Assembly'))
+go
+
 --Create a procedure: createAssembly that accepts two parameters @componentName and
 --componentDescription and inserts into the Component table.
 --Use 0 for ListPrice, TradePrice, TimeToFit.
 --Populate SupplierID and CategoryID by calling the functions getAssemblySupplier and
 --getCategoryID- pass it ‘Assembly’
-
-create proc createAssembly(@componentName nvarchar(100), @componentDescription nvarchar(100))
-as
-	insert Component (ComponentID, ComponentName, ComponentDescription, SupplierID, ListPrice, TradePrice, TimeToFit, CategoryID)
-	values (30924, @componentName, @componentDescription, dbo.getAssemblySupplierID(), 0, 0, 0, dbo.getCategoryID('Assembly'))
-go
 
 
 --create categories
@@ -73,6 +75,8 @@ declare @ABC int
 declare @XYZ int
 declare @CDBD int
 declare @BITManf int
+
+
 
 insert Contact (ContactName, ContactPostalAddress, ContactWWW, ContactEmail, ContactPhone, ContactFax)
 values ('ABC Ltd.', '17 George Street, Dunedin', 'www.abc.co.nz', 'info@abc.co.nz', '	471 2345', null)
@@ -129,6 +133,8 @@ insert Component (ComponentID, ComponentName, ComponentDescription, SupplierID, 
 values (30922, 'DESLAB', 'Designer labour', @BITManf, 54.00, 54.00, 0, dbo.getCategoryID('Labour'))
 insert Component (ComponentID, ComponentName, ComponentDescription, SupplierID, ListPrice, TradePrice, TimeToFit, CategoryID)
 values (30923, 'APPLAB', 'Apprentice labour', @BITManf, 23.50, 23.50, 0, dbo.getCategoryID('Labour'))
+
+set @compID = @@IDENTITY
 
 exec createAssembly  'SmallCorner.15', '15mm small corner'
 exec dbo.addSubComponent 'SmallCorner.15', 'BMS.5.15', 0.120
