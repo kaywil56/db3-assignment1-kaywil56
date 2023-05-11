@@ -50,6 +50,7 @@ as
 	set @compID = @compID + 1
 	insert Component (ComponentID, ComponentName, ComponentDescription, SupplierID, ListPrice, TradePrice, TimeToFit, CategoryID)
 	values (@compID, @componentName, @componentDescription, dbo.getAssemblySupplierID(), 0, 0, 0, dbo.getCategoryID('Assembly'))
+	set @compID = @@IDENTITY
 go
 
 --Create a procedure: createAssembly that accepts two parameters @componentName and
@@ -75,8 +76,6 @@ declare @ABC int
 declare @XYZ int
 declare @CDBD int
 declare @BITManf int
-
-
 
 insert Contact (ContactName, ContactPostalAddress, ContactWWW, ContactEmail, ContactPhone, ContactFax)
 values ('ABC Ltd.', '17 George Street, Dunedin', 'www.abc.co.nz', 'info@abc.co.nz', '	471 2345', null)

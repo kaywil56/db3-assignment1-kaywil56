@@ -33,16 +33,13 @@ create table Component(
 	ComponentID int primary key not null,
 	ComponentName nvarchar(100) not null,
 	ComponentDescription nvarchar(100) not null,
-	TradePrice int not null,
-	TimeToFit decimal(18, 4) not null, 
+	TradePrice int not null check (TradePrice >= 0),
+	TimeToFit decimal(18, 4) not null check (TimeToFit >= 0),
+	ListPrice decimal(18, 4) not null check (ListPrice >= 0), 
 	CategoryID int not null,
 	SupplierID int not null,
-	ListPrice decimal(18, 4) not null, 
 	constraint FK_Component_Category foreign key (CategoryID) references Category(CategoryID),
-	constraint FK_Component_Supplier foreign key (SupplierID) references Supplier(SupplierID),
-
-	constraint CK_Component_TradePrice_NonNegative check (TradePrice >= 0),
-	constraint CK_Component_TimeToFit_NonNegative check (TimeToFit >= 0)
+	constraint FK_Component_Supplier foreign key (SupplierID) references Supplier(SupplierID)
 )
 
 create table AssemblySubcomponent(
@@ -63,26 +60,20 @@ create table Quote(
 	QuoteID int primary key not null,
 	QuoteDescription nvarchar(100) not null,
 	QuoteDate date not null,
-	QuotePrice decimal(18, 4) not null,
+	QuotePrice decimal(18, 4) not null check (QuotePrice >= 0),
 	QuoteCompiler nvarchar(100) not null,
 	CustomerID int not null,
 	constraint FK_Quote_Customer foreign key (CustomerID) references Customer(CustomerID),
-
-	constraint CK_QuotePrice_NonNegative check (QuotePrice >= 0)
 )
 
 create table QuoteComponent(
 	Quantity int not null,
-	TradePrice decimal(18, 4) not null,
-	ListPrice decimal(18, 4) not null,
-	TimeToFit decimal(18, 4) not null,
+	TradePrice decimal(18, 4) not null check (TradePrice >= 0),
+	ListPrice decimal(18, 4) not null check (ListPrice >= 0),
+	TimeToFit decimal(18, 4) not null  check (TimeToFit >= 0),
 	ComponentID int not null,
 	QuoteID int not null,
 	primary key (ComponentID, QuoteID),
 	constraint FK_QuoteComponent_Component foreign key (ComponentID) references Component(ComponentID),
 	constraint FK_QuoteComponent_Quote foreign key (QuoteID) references Quote(QuoteID),
-
-	constraint CK_TradePrice_NonNegative check (TradePrice >= 0),
-	constraint CK_ListPrice_NonNegative check (ListPrice >= 0),
-	constraint CK_TimeToFit_NonNegative check (TimeToFit >= 0)
 )
