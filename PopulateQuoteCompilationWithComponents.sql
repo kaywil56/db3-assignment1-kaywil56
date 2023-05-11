@@ -42,7 +42,14 @@ go
 
 create proc addSubcomponent(@assemblyName nvarchar(100), @subComponentName nvarchar(100), @quantity int)
 as
-	
+	declare @assemblyID int
+	declare @subcomponentID int
+
+	set @assemblyID = (select ComponentID from Component where ComponentName = @assemblyName)
+	set @subcomponentID = (select ComponentID from Component where ComponentName = @subComponentName)
+
+	insert AssemblySubcomponent(AssemblyID, SubcomponentID, Quantity)
+	values(@assemblyID, @subcomponentID, @quantity)
 go
 
 create proc createAssembly(@componentName nvarchar(100), @componentDescription nvarchar(100))
