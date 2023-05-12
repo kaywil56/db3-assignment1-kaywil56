@@ -192,17 +192,17 @@ as
 	return @customerID
 go
 
-
 go
 create proc createQuote(
 @quoteDescription nvarchar(100),
 @quoteDate datetime = null,
 @quotePrice decimal(18, 4) = null,
 @quoteCompiler nvarchar(100),
-@customerID int,
-@quoteID int output)
+@customerID int)
 as
 begin
+	declare @quoteID int
+
 	if @quoteDate is null
 		set @quoteDate = GETDATE()
 
@@ -210,6 +210,8 @@ begin
 	values(@quoteDescription, @quoteDate, @quotePrice, @quoteCompiler, @customerID)
 	
 	set @quoteID = @@IDENTITY
+
+	return @quoteID
 end
 go
 
@@ -233,3 +235,28 @@ begin
 	values(@quoteID, @componentID, @quantity, @tradePrice, @listPrice, @timeToFit)
 end
 go
+
+
+--create proc createCustomer(@name nvarchar(100),
+--@phone char(50),
+--@postalAddress nvarchar(100),
+--@email nvarchar(50) = null,
+--@www nvarchar(100) = null,
+--@fax nvarchar(100) = null,
+--@mobilePhone char(50) = null)
+
+--create proc createQuote(
+--@quoteDescription nvarchar(100),
+--@quoteDate datetime = null,
+--@quotePrice decimal(18, 4) = null,
+--@quoteCompiler nvarchar(100),
+--@customerID int)
+--as
+
+
+declare @customerID int
+declare @quoteID int
+
+exec @customerID = dbo.createCustomer 'Bimble & Hat', '444 5555', '123 Digit Street, Dunedin', NULL, NULL, 'guy.little@bh.biz.nz', NULL
+exec @quoteID = dbo.createQuote 'Craypot frame', NULL, NULL, 'comp', @customerID
+--exec dbo.addQuoteComponent @quoteID, 
