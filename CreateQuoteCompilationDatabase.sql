@@ -26,7 +26,7 @@ create table Contact(
 create table Supplier(
 	SupplierID int primary key not null,
 	SupplierGST decimal(18, 4) not null,
-	constraint FK_Supplier_Contact foreign key (SupplierID) references Contact(ContactID),
+	constraint FK_Supplier_Contact foreign key (SupplierID) references Contact(ContactID) on update no action on delete no action,
 )
 
 create table Component(
@@ -38,22 +38,22 @@ create table Component(
 	ListPrice decimal(18, 4) not null check (ListPrice >= 0), 
 	CategoryID int not null,
 	SupplierID int not null,
-	constraint FK_Component_Category foreign key (CategoryID) references Category(CategoryID),
-	constraint FK_Component_Supplier foreign key (SupplierID) references Supplier(SupplierID)
+	constraint FK_Component_Category foreign key (CategoryID) references Category(CategoryID) on update no action on delete no action,
+	constraint FK_Component_Supplier foreign key (SupplierID) references Supplier(SupplierID) on update no action on delete no action
 )
 
 create table AssemblySubcomponent(
 	AssemblyID int not null,
 	SubcomponentID int not null,
 	primary key (AssemblyID, SubcomponentID),
-	constraint FK_Assembly_Component foreign key (AssemblyID) references Component(ComponentID),
-	constraint FK_Subcomponent_Component foreign key (SubcomponentID) references Component(ComponentID),
+	constraint FK_Assembly_Component foreign key (AssemblyID) references Component(ComponentID) on delete no action,
+	constraint FK_Subcomponent_Component foreign key (SubcomponentID) references Component(ComponentID) on delete no action,
 	Quantity int not null
 )
 
 create table Customer(
 	CustomerID int primary key not null,
-	constraint FK_Customer_Contact foreign key (CustomerID) references Contact(ContactID)
+	constraint FK_Customer_Contact foreign key (CustomerID) references Contact(ContactID) on update cascade on delete cascade
 )
 
 create table Quote(
@@ -63,7 +63,7 @@ create table Quote(
 	QuotePrice decimal(18, 4) not null check (QuotePrice >= 0),
 	QuoteCompiler nvarchar(100) not null,
 	CustomerID int not null,
-	constraint FK_Quote_Customer foreign key (CustomerID) references Customer(CustomerID),
+	constraint FK_Quote_Customer foreign key (CustomerID) references Customer(CustomerID) on update cascade on delete no action,
 )
 
 create table QuoteComponent(
@@ -74,6 +74,6 @@ create table QuoteComponent(
 	ComponentID int not null,
 	QuoteID int not null,
 	primary key (ComponentID, QuoteID),
-	constraint FK_QuoteComponent_Component foreign key (ComponentID) references Component(ComponentID),
-	constraint FK_QuoteComponent_Quote foreign key (QuoteID) references Quote(QuoteID),
+	constraint FK_QuoteComponent_Component foreign key (ComponentID) references Component(ComponentID) on delete no action,
+	constraint FK_QuoteComponent_Quote foreign key (QuoteID) references Quote(QuoteID) on update cascade on delete cascade,
 )
