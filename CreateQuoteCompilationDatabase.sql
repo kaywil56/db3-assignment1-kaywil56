@@ -25,7 +25,7 @@ create table Contact(
 
 create table Supplier(
 	SupplierID int primary key not null,
-	SupplierGST decimal(18, 4) not null,
+	SupplierGST decimal(18, 4) not null default 0,
 	constraint FK_Supplier_Contact foreign key (SupplierID) references Contact(ContactID) on update no action on delete no action,
 )
 
@@ -41,6 +41,8 @@ create table Component(
 	constraint FK_Component_Category foreign key (CategoryID) references Category(CategoryID) on update no action on delete no action,
 	constraint FK_Component_Supplier foreign key (SupplierID) references Supplier(SupplierID) on update no action on delete no action
 )
+
+ALTER TABLE Component NOCHECK CONSTRAINT FK_Component_Supplier;
 
 create table AssemblySubcomponent(
 	AssemblyID int not null,

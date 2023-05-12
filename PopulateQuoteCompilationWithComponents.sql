@@ -22,7 +22,7 @@ drop proc if exists addSubComponent
 drop function if exists dbo.getCategoryID
 drop function if exists dbo.getAssemblySupplierID
 
-ALTER TABLE Component NOCHECK CONSTRAINT FK_Component_Supplier;
+ALTER TABLE Component NOCHECK CONSTRAINT FK_Component_Supplier
 
 go
 create function getCategoryID(@categoryName nvarchar(100))
@@ -53,15 +53,6 @@ as
 
 	insert AssemblySubcomponent(AssemblyID, SubcomponentID, Quantity)
 	values(@assemblyID, @subcomponentID, @quantity)
-go
-
-go
-create proc createAssembly(@componentName nvarchar(100), @componentDescription nvarchar(100))
-as
-begin
-	insert Component (ComponentName, ComponentDescription, SupplierID, ListPrice, TradePrice, TimeToFit, CategoryID)
-	values (@componentName, @componentDescription, dbo.getAssemblySupplierID(), 0, 0, 0, dbo.getCategoryID('Assembly'))
-end
 go
 
 go
@@ -149,7 +140,10 @@ insert Component (ComponentID, ComponentName, ComponentDescription, SupplierID, 
 values (30923, 'APPLAB', 'Apprentice labour', @BITManf, 23.50, 23.50, 0, dbo.getCategoryID('Labour'))
 
 set IDENTITY_INSERT component off
-alter table Component check constraint FK_Component_Supplier;
+
+insert Supplier(SupplierID) select ContactID from Contact
+
+ALTER TABLE Component CHECK CONSTRAINT FK_Component_Supplier;
 
 exec createAssembly  'SmallCorner.15', '15mm small corner'
 exec dbo.addSubComponent 'SmallCorner.15', 'BMS.5.15', 0.120
@@ -236,27 +230,36 @@ begin
 end
 go
 
-
---create proc createCustomer(@name nvarchar(100),
---@phone char(50),
---@postalAddress nvarchar(100),
---@email nvarchar(50) = null,
---@www nvarchar(100) = null,
---@fax nvarchar(100) = null,
---@mobilePhone char(50) = null)
-
---create proc createQuote(
---@quoteDescription nvarchar(100),
---@quoteDate datetime = null,
---@quotePrice decimal(18, 4) = null,
---@quoteCompiler nvarchar(100),
---@customerID int)
---as
-
-
 declare @customerID int
 declare @quoteID int
 
 exec @customerID = dbo.createCustomer 'Bimble & Hat', '444 5555', '123 Digit Street, Dunedin', NULL, NULL, 'guy.little@bh.biz.nz', NULL
-exec @quoteID = dbo.createQuote 'Craypot frame', NULL, NULL, 'comp', @customerID
---exec dbo.addQuoteComponent @quoteID, 
+exec @quoteID = dbo.createQuote 'Craypot frame', NULL, NULL, 'compiler', @customerID
+
+select * from Component
+
+
+--go
+--create trigger trigAssemblyComponentCascadeUpdate on  Component
+--after update
+--as
+--begin
+--	if update(ComponentID)
+--	begin
+--		update AssemblySubcomponent
+--		set AssemblyID = inserted.ComponentID
+--		from AssemblySubcomponent
+--	end
+--end
+--go
+
+
+go
+create proc updateAssemblyPrices()
+as
+begin
+end
+go 
+
+select * from Component
+
