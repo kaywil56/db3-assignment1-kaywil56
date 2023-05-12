@@ -17,8 +17,14 @@ you must have implemented the database as specified on the assignment ERD
 --create proc addSubComponent
 -- Using variables : @ABC int, @XYZ int, @CDBD int, @BITManf int- capture the ContactID
 
-declare @compID int
+drop proc if exists createAssembly
+drop proc if exists addSubComponent
+drop function if exists dbo.getCategoryID
+drop function if exists dbo.getAssemblySupplierID
 
+ALTER TABLE Component NOCHECK CONSTRAINT FK_Component_Supplier;
+
+go
 create function getCategoryID(@categoryName nvarchar(100))
 returns int
 as
@@ -27,6 +33,7 @@ begin
 end
 go
 
+go
 create function getAssemblySupplierID()
 returns int
 as
@@ -35,11 +42,7 @@ begin
 end
 go
 
---Create a procedure addSubComponent that accepts assemblyName, subComponentName
---and quantity and inserts into the AssemblySubComponent (you will need a self join on
---Component)
-
-
+go
 create proc addSubcomponent(@assemblyName nvarchar(100), @subComponentName nvarchar(100), @quantity int)
 as
 	declare @assemblyID int
@@ -52,20 +55,23 @@ as
 	values(@assemblyID, @subcomponentID, @quantity)
 go
 
+go
 create proc createAssembly(@componentName nvarchar(100), @componentDescription nvarchar(100))
 as
-	set @compID = @compID + 1
-	insert Component (ComponentID, ComponentName, ComponentDescription, SupplierID, ListPrice, TradePrice, TimeToFit, CategoryID)
-	values (@compID, @componentName, @componentDescription, dbo.getAssemblySupplierID(), 0, 0, 0, dbo.getCategoryID('Assembly'))
-	set @compID = @@IDENTITY
+begin
+	insert Component (ComponentName, ComponentDescription, SupplierID, ListPrice, TradePrice, TimeToFit, CategoryID)
+	values (@componentName, @componentDescription, dbo.getAssemblySupplierID(), 0, 0, 0, dbo.getCategoryID('Assembly'))
+end
 go
 
---Create a procedure: createAssembly that accepts two parameters @componentName and
---componentDescription and inserts into the Component table.
---Use 0 for ListPrice, TradePrice, TimeToFit.
---Populate SupplierID and CategoryID by calling the functions getAssemblySupplier and
---getCategoryID- pass it ‘Assembly’
-
+go
+create proc createAssembly(@componentName nvarchar(100), @componentDescription nvarchar(100))
+as
+begin
+	insert Component (ComponentName, ComponentDescription, SupplierID, ListPrice, TradePrice, TimeToFit, CategoryID)
+	values (@componentName, @componentDescription, dbo.getAssemblySupplierID(), 0, 0, 0, dbo.getCategoryID('Assembly'))
+end
+go
 
 --create categories
 insert Category (CategoryName) values ('Black Steel')
@@ -107,6 +113,8 @@ set @BITManf = @@IDENTITY
 -- create components
 -- Note this script relies on you having captured the ContactID to insert into SupplierID
 
+set IDENTITY_INSERT component on
+
 insert Component (ComponentID, ComponentName, ComponentDescription, SupplierID, ListPrice, TradePrice, TimeToFit, CategoryID)
 values (30901, 'BMS10', '10mm M6 ms bolt', @ABC, 0.20, 0.17, 0.5, dbo.getCategoryID('Fixings'))
 insert Component (ComponentID, ComponentName, ComponentDescription, SupplierID, ListPrice, TradePrice, TimeToFit, CategoryID)
@@ -140,7 +148,8 @@ values (30922, 'DESLAB', 'Designer labour', @BITManf, 54.00, 54.00, 0, dbo.getCa
 insert Component (ComponentID, ComponentName, ComponentDescription, SupplierID, ListPrice, TradePrice, TimeToFit, CategoryID)
 values (30923, 'APPLAB', 'Apprentice labour', @BITManf, 23.50, 23.50, 0, dbo.getCategoryID('Labour'))
 
-set @compID = @@IDENTITY
+set IDENTITY_INSERT component off
+alter table Component check constraint FK_Component_Supplier;
 
 exec createAssembly  'SmallCorner.15', '15mm small corner'
 exec dbo.addSubComponent 'SmallCorner.15', 'BMS.5.15', 0.120
@@ -163,3 +172,64 @@ drop proc createAssembly
 drop proc addSubComponent
 drop function dbo.getCategoryID
 drop function dbo.getAssemblySupplierID
+
+go
+create proc createCustomer(@name nvarchar(100),
+@phone char(50),
+@postalAddress nvarchar(100),
+@email nvarchar(50) = null,
+@www nvarchar(100) = null,
+@fax nvarchar(100) = null,
+@mobilePhone char(50) = null)
+as
+	declare @customerID int
+
+	insert Contact(ContactPhone, ContactPostalAddress, ContactEmail, ContactWWW, ContactFax, ContactMobilePhone)
+	values(@phone, @postalAddress, @email, @www, @fax, @mobilePhone)
+
+	set @customerID = @@IDENTITY
+
+	return @customerID
+go
+
+
+go
+create proc createQuote(
+@quoteDescription nvarchar(100),
+@quoteDate datetime = null,
+@quotePrice decimal(18, 4) = null,
+@quoteCompiler nvarchar(100),
+@customerID int,
+@quoteID int output)
+as
+begin
+	if @quoteDate is null
+		set @quoteDate = GETDATE()
+
+	insert Quote(QuoteDescription, QuoteDate, QuotePrice, QuoteCompiler, CustomerID)
+	values(@quoteDescription, @quoteDate, @quotePrice, @quoteCompiler, @customerID)
+	
+	set @quoteID = @@IDENTITY
+end
+go
+
+
+go
+create proc addQuoteComponent
+    @quoteID int,
+    @componentID int,
+    @quantity int
+as
+begin
+	declare @tradePrice decimal (18, 4);
+	declare @listPrice decimal (18, 4);
+	declare @timeToFit decimal (18, 4);
+
+	set @tradePrice = (select TradePrice from Component where ComponentID = @componentID)
+	set @listPrice = (select ListPrice from Component where ComponentID = @componentID)
+	set @timeToFit = (select TimeToFit from Component where ComponentID = @componentID)
+
+	insert QuoteComponent(QuoteID, ComponentID, Quantity, TradePrice, ListPrice, TimeToFit)
+	values(@quoteID, @componentID, @quantity, @tradePrice, @listPrice, @timeToFit)
+end
+go

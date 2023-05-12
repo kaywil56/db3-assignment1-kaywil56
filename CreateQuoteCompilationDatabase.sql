@@ -15,9 +15,9 @@ create table Category(
 create table Contact(
 	ContactID int identity(1,1) primary key not null,
 	ContactName nvarchar(100) not null,
-	ContactPhone bigint not null,
-	ContactFax bigint,
-	ContactMobilePhone bigint,
+	ContactPhone varchar(50) not null,
+	ContactFax varchar(50),
+	ContactMobilePhone varchar(50),
 	ContactEmail nvarchar(50),
 	ContactWWW nvarchar(100),
 	ContactPostalAddress nvarchar(100) not null
@@ -30,7 +30,7 @@ create table Supplier(
 )
 
 create table Component(
-	ComponentID int primary key not null,
+	ComponentID int identity(30924, 1) primary key not null,
 	ComponentName nvarchar(100) not null,
 	ComponentDescription nvarchar(100) not null,
 	TradePrice int not null check (TradePrice >= 0),
@@ -57,7 +57,7 @@ create table Customer(
 )
 
 create table Quote(
-	QuoteID int primary key not null,
+	QuoteID int identity(1, 1) primary key,
 	QuoteDescription nvarchar(100) not null,
 	QuoteDate date not null,
 	QuotePrice decimal(18, 4) not null check (QuotePrice >= 0),
