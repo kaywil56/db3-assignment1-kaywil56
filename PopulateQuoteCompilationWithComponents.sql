@@ -21,6 +21,7 @@ drop proc if exists createCustomer
 drop proc if exists createQuote
 drop proc if exists addQuoteComponent
 
+drop trigger if exists trigSupplierDelete
 
 drop proc if exists createAssembly
 drop proc if exists addSubComponent
@@ -262,7 +263,6 @@ exec dbo.addQuoteComponent 3, 30936, 3
 exec dbo.addQuoteComponent 3, 30934, 1
 exec dbo.addQuoteComponent 3, 30921, 320
 exec dbo.addQuoteComponent 3, 30922, 105
---exec dbo.addQuoteComponent @quoteID, 30921, 320
 exec dbo.addQuoteComponent 3, 30932, 500
 
 select * from Component
@@ -272,19 +272,33 @@ select * from Customer
 select * from Quote
 
 --go
---create trigger trigAssemblyComponentCascadeUpdate on  Component
+--create trigger trigAssemblyComponentCascadeUpdate on Component
 --after update
 --as
 --begin
 --	if update(ComponentID)
 --	begin
 --		update AssemblySubcomponent
---		set AssemblyID = inserted.ComponentID
---		from AssemblySubcomponent
+--		set AssemblyID = (select ComponentID from inserted), 
+--		SubcomponentID  = (select ComponentID from inserted)
+--		from AssemblySubcomponent join deleted on
+--		AssemblySubcomponent.AssemblyID = deleted.ComponentID
 --	end
 --end
 --go
 
+--select * from Component
+--select * from AssemblySubcomponent
+
+--update Component
+--set ComponentID = 500000
+--from Component where ComponentID = 30901 
+
+
+--Design and implement a stored procedure updateAssemblyPrices() that will efficiently
+--and completely update the trade price and list price of all assemblies. The trade price is
+--the total of all subcomponent trade prices. The list price is the total of all subcomponent
+--list prices
 
 --go
 --create proc updateAssemblyPrices()
@@ -293,5 +307,60 @@ select * from Quote
 --end
 --go 
 
---select * from Component
+
+--Design and implement a trigger trigSupplierDelete that reacts to a Supplier record
+--being deleted. If the supplier has one or more related component(s) the deletion will be
+--cancelled and the error message ‘You cannot delete this supplier. XYZ has K related
+--components.’ printed in the messages window [substitute XYZ -> SupplierName, K ->
+--number of related components ].
+
+go
+create trigger trigSupplierDelete on Supplier
+instead of delete
+as
+begin
+	declare @compCount int 
+	declare @suppName nvarchar(100)
+
+	select @compCount = count(*), @suppName = ContactName from Supplier join Component on 
+	Supplier.SupplierID = Component.SupplierID 
+	join Contact on Supplier.SupplierID = Contact.ContactID
+	where Supplier.SupplierID = (select SupplierID from deleted)
+	group by Supplier.SupplierID, ContactName
+
+	if @compCount > 0
+	begin
+		print 'You cannot delete this supplier. ' + @SuppName + ' has ' + cast(@CompCount as nvarchar(10)) + ' related component(s).'
+		rollback
+	end
+	else
+	begin
+		delete from Supplier
+		where SupplierID = (select SupplierID from deleted)
+	end
+end
+go
+
+--For testing
+--delete from Supplier
+--where SupplierID = 1;
+
+--delete from AssemblySubcomponent
+--delete from QuoteComponent
+--delete from Component
+
+--delete from Supplier
+--where SupplierID = 1;
+
+
+
+
+
+
+
+
+
+
+
+
 
