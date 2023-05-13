@@ -22,6 +22,7 @@ drop proc if exists createQuote
 drop proc if exists addQuoteComponent
 
 drop trigger if exists trigSupplierDelete
+drop proc if exists updateAssemblyPrices
 
 drop proc if exists createAssembly
 drop proc if exists addSubComponent
@@ -295,24 +296,23 @@ select * from Quote
 --from Component where ComponentID = 30901 
 
 
---Design and implement a stored procedure updateAssemblyPrices() that will efficiently
---and completely update the trade price and list price of all assemblies. The trade price is
---the total of all subcomponent trade prices. The list price is the total of all subcomponent
---list prices
+--select * from Component
 
---go
---create proc updateAssemblyPrices()
---as
---begin
---end
---go 
+go
+create proc updateAssemblyPrices
+as
+begin
+	update Component set TradePrice = tprice, ListPrice = lprice from
+	(select sum(TradePrice) as tprice, sum(ListPrice) as lprice, AssemblyID from Component join
+	AssemblySubcomponent on Component.ComponentID = AssemblySubcomponent.SubcomponentID
+	group by AssemblyID) as priceSums
+	where ComponentID = priceSums.AssemblyID
+end
+go 
 
+--exec updateAssemblyPrices
 
---Design and implement a trigger trigSupplierDelete that reacts to a Supplier record
---being deleted. If the supplier has one or more related component(s) the deletion will be
---cancelled and the error message ‘You cannot delete this supplier. XYZ has K related
---components.’ printed in the messages window [substitute XYZ -> SupplierName, K ->
---number of related components ].
+--select * from Component
 
 go
 create trigger trigSupplierDelete on Supplier
