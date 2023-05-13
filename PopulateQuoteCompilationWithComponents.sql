@@ -17,6 +17,11 @@ you must have implemented the database as specified on the assignment ERD
 --create proc addSubComponent
 -- Using variables : @ABC int, @XYZ int, @CDBD int, @BITManf int- capture the ContactID
 
+drop proc if exists createCustomer
+drop proc if exists createQuote
+drop proc if exists addQuoteComponent
+
+
 drop proc if exists createAssembly
 drop proc if exists addSubComponent
 drop function if exists dbo.getCategoryID
@@ -174,16 +179,16 @@ create proc createCustomer(@name nvarchar(100),
 @email nvarchar(50) = null,
 @www nvarchar(100) = null,
 @fax nvarchar(100) = null,
-@mobilePhone char(50) = null)
+@mobilePhone char(50) = null,
+@customerID int output)
 as
-	declare @customerID int
-
-	insert Contact(ContactPhone, ContactPostalAddress, ContactEmail, ContactWWW, ContactFax, ContactMobilePhone)
-	values(@phone, @postalAddress, @email, @www, @fax, @mobilePhone)
+	insert Contact(ContactName, ContactPhone, ContactPostalAddress, ContactEmail, ContactWWW, ContactFax, ContactMobilePhone)
+	values(@name, @phone, @postalAddress, @email, @www, @fax, @mobilePhone)
 
 	set @customerID = @@IDENTITY
 
-	return @customerID
+	insert into Customer(CustomerID) values(@customerID)
+	select @customerID as CustomerID
 go
 
 go
@@ -192,11 +197,10 @@ create proc createQuote(
 @quoteDate datetime = null,
 @quotePrice decimal(18, 4) = null,
 @quoteCompiler nvarchar(100),
-@customerID int)
+@customerID int,
+@quoteID int output)
 as
 begin
-	declare @quoteID int
-
 	if @quoteDate is null
 		set @quoteDate = GETDATE()
 
@@ -205,10 +209,9 @@ begin
 	
 	set @quoteID = @@IDENTITY
 
-	return @quoteID
+	select @quoteID as QuoteID
 end
 go
-
 
 go
 create proc addQuoteComponent
@@ -233,11 +236,40 @@ go
 declare @customerID int
 declare @quoteID int
 
-exec @customerID = dbo.createCustomer 'Bimble & Hat', '444 5555', '123 Digit Street, Dunedin', NULL, NULL, 'guy.little@bh.biz.nz', NULL
-exec @quoteID = dbo.createQuote 'Craypot frame', NULL, NULL, 'compiler', @customerID
+exec dbo.createCustomer 'Bimble & Hat', '444 5555', '123 Digit Street, Dunedin', NULL, NULL, 'guy.little@bh.biz.nz', NULL, @customerID
+exec dbo.createQuote 'Craypot frame', NULL, NULL, 'compiler', 5, @quoteID
+exec dbo.addQuoteComponent 1, 30935, 3
+exec dbo.addQuoteComponent 1, 30912, 8
+exec dbo.addQuoteComponent 1, 30901, 24
+exec dbo.addQuoteComponent 1, 30904, 24
+exec dbo.addQuoteComponent 1, 30933, 200
+exec dbo.addQuoteComponent 1, 30921, 150
+exec dbo.addQuoteComponent 1, 30923, 120
+exec dbo.addQuoteComponent 1, 30922, 45
+
+exec dbo.createCustomer 'Bimble & Hat', '444 5555', '123 Digit Street, Dunedin', NULL, NULL, 'guy.little@bh.biz.nz', NULL, @customerID
+exec dbo.createQuote 'Craypot Stand', NULL, NULL, 'compiler', 5, @quoteID
+exec dbo.addQuoteComponent 2, 30914, 2
+exec dbo.addQuoteComponent 2, 30903, 4
+exec dbo.addQuoteComponent 2, 30906, 4
+exec dbo.addQuoteComponent 2, 30933, 100
+exec dbo.addQuoteComponent 2, 30923, 90
+exec dbo.addQuoteComponent 2, 30922, 15
+
+exec dbo.createCustomer 'Hyperfont Modulator (International) Ltd', '(4) 213 4359', '3 Lambton Quay, Wellington', NULL, NULL, 'sue@nz.hfm.com', NULL, @customerID
+exec dbo.createQuote 'Phasing restitution fulcrum', NULL, NULL, 'compiler', 6, @quoteID
+exec dbo.addQuoteComponent 3, 30936, 3
+exec dbo.addQuoteComponent 3, 30934, 1
+exec dbo.addQuoteComponent 3, 30921, 320
+exec dbo.addQuoteComponent 3, 30922, 105
+--exec dbo.addQuoteComponent @quoteID, 30921, 320
+exec dbo.addQuoteComponent 3, 30932, 500
 
 select * from Component
-
+select * from QuoteComponent order by QuoteID
+select * from Supplier
+select * from Customer
+select * from Quote
 
 --go
 --create trigger trigAssemblyComponentCascadeUpdate on  Component
@@ -254,12 +286,12 @@ select * from Component
 --go
 
 
-go
-create proc updateAssemblyPrices()
-as
-begin
-end
-go 
+--go
+--create proc updateAssemblyPrices()
+--as
+--begin
+--end
+--go 
 
-select * from Component
+--select * from Component
 

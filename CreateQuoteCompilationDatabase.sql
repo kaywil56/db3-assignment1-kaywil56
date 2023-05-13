@@ -42,8 +42,6 @@ create table Component(
 	constraint FK_Component_Supplier foreign key (SupplierID) references Supplier(SupplierID) on update no action on delete no action
 )
 
-ALTER TABLE Component NOCHECK CONSTRAINT FK_Component_Supplier;
-
 create table AssemblySubcomponent(
 	AssemblyID int not null,
 	SubcomponentID int not null,
@@ -62,7 +60,7 @@ create table Quote(
 	QuoteID int identity(1, 1) primary key,
 	QuoteDescription nvarchar(100) not null,
 	QuoteDate date not null,
-	QuotePrice decimal(18, 4) not null check (QuotePrice >= 0),
+	QuotePrice decimal(18, 4) default 0 check (QuotePrice >= 0),
 	QuoteCompiler nvarchar(100) not null,
 	CustomerID int not null,
 	constraint FK_Quote_Customer foreign key (CustomerID) references Customer(CustomerID) on update cascade on delete no action,
