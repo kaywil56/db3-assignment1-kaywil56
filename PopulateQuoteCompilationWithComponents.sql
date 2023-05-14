@@ -50,7 +50,7 @@ end
 go
 
 go
-create proc addSubcomponent(@assemblyName nvarchar(100), @subComponentName nvarchar(100), @quantity int)
+create proc addSubcomponent(@assemblyName nvarchar(100), @subComponentName nvarchar(100), @quantity decimal(18, 4))
 as
 	declare @assemblyID int
 	declare @subcomponentID int
@@ -219,7 +219,7 @@ go
 create proc addQuoteComponent
     @quoteID int,
     @componentID int,
-    @quantity int
+    @quantity decimal(18,  4)
 as
 begin
 	declare @tradePrice decimal (18, 4);
@@ -249,7 +249,6 @@ exec dbo.addQuoteComponent 1, 30921, 150
 exec dbo.addQuoteComponent 1, 30923, 120
 exec dbo.addQuoteComponent 1, 30922, 45
 
-exec dbo.createCustomer 'Bimble & Hat', '444 5555', '123 Digit Street, Dunedin', NULL, NULL, 'guy.little@bh.biz.nz', NULL, @customerID
 exec dbo.createQuote 'Craypot Stand', NULL, NULL, 'compiler', 5, @quoteID
 exec dbo.addQuoteComponent 2, 30914, 2
 exec dbo.addQuoteComponent 2, 30903, 4
@@ -267,10 +266,11 @@ exec dbo.addQuoteComponent 3, 30922, 105
 exec dbo.addQuoteComponent 3, 30932, 500
 
 select * from Component
-select * from QuoteComponent order by QuoteID
+select * from QuoteComponent
 select * from Supplier
 select * from Customer
 select * from Quote
+select * from Contact
 
 --go
 --create trigger trigAssemblyComponentCascadeUpdate on Component
@@ -310,9 +310,9 @@ begin
 end
 go 
 
---exec updateAssemblyPrices
+exec updateAssemblyPrices
 
---select * from Component
+select * from Component
 
 go
 create trigger trigSupplierDelete on Supplier
